@@ -33,6 +33,7 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/courses', require('./routes/course.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
 app.use('/api/batches', require('./routes/batch.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
 
 // 404 handler
 app.use((req, res) => {
