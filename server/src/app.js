@@ -16,7 +16,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Body parsing — NOTE: webhook route uses raw body, handled separately
+// CRITICAL: Webhook route must use raw body BEFORE express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
+// Body parsing for all other routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,6 +31,7 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/courses', require('./routes/course.routes'));
+app.use('/api/payments', require('./routes/payment.routes'));
 
 // 404 handler
 app.use((req, res) => {
