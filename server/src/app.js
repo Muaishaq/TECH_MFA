@@ -25,8 +25,8 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'TECH_MFA API is running' });
 });
 
-// Routes (we will add these one by one)
-// app.use('/api/auth', require('./routes/auth.routes'));
+// Routes
+app.use('/api/auth', require('./routes/auth.routes'));
 
 // 404 handler
 app.use((req, res) => {
