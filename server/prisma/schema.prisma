@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  full_name    String
+  email        String   @unique
+  password_hash String
+  role         Role     @default(student)
+  is_verified  Boolean  @default(false)
+  avatar_url   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  enrollments   Enrollment[]
+  payments      Payment[]
+  notifications Notification[]
+  progress      Progress[]
+  chat_members  ChatMember[]
+  messages      Message[]
+
+  @@map("users")
+}
+
+enum Role {
+  student
+  admin
+}
+
+model Course {
+  id           String      @id @default(uuid())
+  title        String
+  description  String?
+  academy      Academy
+  type         CourseType
+  price        Decimal     @default(0)
+  thumbnail_url String?
+  is_published Boolean     @default(false)
+  promo_expires DateTime?
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+
+  modules     Module[]
+  enrollments Enrollment[]
+  payments    Payment[]
+  batches     Batch[]
+  sessions    LiveSession[]
+
+  @@map("courses")
+}
+
+enum Academy {
+  forex
+  tech
+}
+
+enum CourseType {
+  free
+  promo
+  paid
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  course_id   String
+  title       String
+  order_index Int
+  created_at  DateTime @default(now())
+
+  course  Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@map("modules")
+}
+
+model Lesson {
+  id          String     @id @default(uuid())
+  module_id   String
+  title       String
+  type        LessonType
+  content_url String?
+  rich_text   String?
+  order_index Int
+  created_at  DateTime   @default(now())
+
+  module   Module     @relation(fields: [module_id], references: [id], onDelete: Cascade)
+  progress Progress[]
+
+  @@map("lessons")
+}
+
+enum LessonType {
+  video
+  pdf
+  text
+}
+
+model Batch {
+  id           String      @id @default(uuid())
+  name         String
+  academy      Academy
+  course_id    String?
+  max_students Int?
+  status       BatchStatus @default(closed)
+  form_schema  Json?
+  open_date    DateTime?
+  close_date   DateTime?
+  created_at   DateTime    @default(now())
+
+  course       Course?      @relation(fields: [course_id], references: [id])
+  enrollments  Enrollment[]
+  sessions     LiveSession[]
+  chat_room    ChatRoom?
+
+  @@map("batches")
+}
+
+enum BatchStatus {
+  open
+  closed
+  completed
+}
+
+model Enrollment {
+  id         String           @id @default(uuid())
+  student_id String
+  course_id  String?
+  batch_id   String?
+  status     EnrollmentStatus @default(pending)
+  form_data  Json?
+  enrolled_at DateTime        @default(now())
+
+  student User    @relation(fields: [student_id], references: [id])
+  course  Course? @relation(fields: [course_id], references: [id])
+  batch   Batch?  @relation(fields: [batch_id], references: [id])
+
+  @@map("enrollments")
+}
+
+enum EnrollmentStatus {
+  pending
+  approved
+  rejected
+  active
+}
+
+model Payment {
+  id           String        @id @default(uuid())
+  student_id   String
+  course_id    String?
+  amount       Decimal
+  currency     String        @default("NGN")
+  paystack_ref String?       @unique
+  status       PaymentStatus @default(pending)
+  paid_at      DateTime?
+  created_at   DateTime      @default(now())
+
+  student User    @relation(fields: [student_id], references: [id])
+  course  Course? @relation(fields: [course_id], references: [id])
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+}
+
+model LiveSession {
+  id            String   @id @default(uuid())
+  course_id     String?
+  batch_id      String?
+  title         String
+  scheduled_at  DateTime
+  duration_mins Int      @default(60)
+  jitsi_room    String
+  recording_url String?
+  created_by    String?
+  created_at    DateTime @default(now())
+
+  course Course? @relation(fields: [course_id], references: [id])
+  batch  Batch?  @relation(fields: [batch_id], references: [id])
+
+  @@map("live_sessions")
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  user_id    String
+  title      String
+  message    String
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
+}
+
+model Progress {
+  id           String    @id @default(uuid())
+  student_id   String
+  lesson_id    String
+  completed    Boolean   @default(false)
+  completed_at DateTime?
+
+  student User   @relation(fields: [student_id], references: [id])
+  lesson  Lesson @relation(fields: [lesson_id], references: [id])
+
+  @@unique([student_id, lesson_id])
+  @@map("progress")
+}
+
+model ChatRoom {
+  id         String         @id @default(uuid())
+  name       String
+  type       ChatRoomType
+  academy    ChatAcademy
+  batch_id   String?        @unique
+  status     ChatRoomStatus @default(active)
+  created_at DateTime       @default(now())
+
+  batch    Batch?       @relation(fields: [batch_id], references: [id])
+  members  ChatMember[]
+  messages Message[]
+
+  @@map("chat_rooms")
+}
+
+enum ChatRoomType {
+  announcement
+  lounge
+  batch
+}
+
+enum ChatAcademy {
+  forex
+  tech
+  both
+}
+
+enum ChatRoomStatus {
+  active
+  archived
+}
+
+model ChatMember {
+  id        String   @id @default(uuid())
+  room_id   String
+  user_id   String
+  joined_at DateTime @default(now())
+
+  room ChatRoom @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([room_id, user_id])
+  @@map("chat_members")
+}
+
+model Message {
+  id             String      @id @default(uuid())
+  room_id        String
+  sender_id      String
+  content        String?
+  type           MessageType @default(text)
+  attachment_url String?
+  is_pinned      Boolean     @default(false)
+  is_deleted     Boolean     @default(false)
+  created_at     DateTime    @default(now())
+  edited_at      DateTime?
+
+  room      ChatRoom          @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  sender    User              @relation(fields: [sender_id], references: [id])
+  reactions MessageReaction[]
+
+  @@map("messages")
+}
+
+enum MessageType {
+  text
+  image
+  file
+}
+
+model MessageReaction {
+  id         String   @id @default(uuid())
+  message_id String
+  user_id    String
+  emoji      String
+  created_at DateTime @default(now())
+
+  message Message @relation(fields: [message_id], references: [id], onDelete: Cascade)
+
+  @@unique([message_id, user_id, emoji])
+  @@map("message_reactions")
+}
