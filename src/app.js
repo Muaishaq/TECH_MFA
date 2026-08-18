@@ -13,10 +13,7 @@ app.use(helmet());
 // CORS
 app.use(cors({
   origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:8080',
-    'https://dual-launchpad.lovable.app'
+    'https://muaishaq-academy-all-in-one.netlify.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
