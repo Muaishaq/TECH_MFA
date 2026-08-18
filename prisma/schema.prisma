@@ -3,8 +3,73 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  student
+  admin
+}
+
+enum Academy {
+  forex
+  tech
+}
+
+enum CourseType {
+  free
+  promo
+  paid
+}
+
+enum BatchStatus {
+  open
+  closed
+  completed
+}
+
+enum EnrollmentStatus {
+  pending
+  approved
+  rejected
+  active
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+}
+
+enum LessonType {
+  video
+  pdf
+  text
+}
+
+enum ChatRoomType {
+  announcement
+  lounge
+  batch
+}
+
+enum ChatAcademy {
+  forex
+  tech
+  both
+}
+
+enum ChatRoomStatus {
+  active
+  archived
+}
+
+enum MessageType {
+  text
+  image
+  file
 }
 
 model User {
@@ -12,8 +77,8 @@ model User {
   full_name     String
   email         String   @unique
   password_hash String
-  role          String   @default("student")
-  academy       String?  @default("forex")
+  role          Role     @default(student)
+  academy       Academy? @default(forex)
   is_verified   Boolean  @default(false)
   avatar_url    String?
   created_at    DateTime @default(now())
@@ -30,22 +95,22 @@ model User {
 }
 
 model Course {
-  id            String   @id @default(uuid())
+  id            String     @id @default(uuid())
   title         String
   description   String?
-  academy       String
-  type          String
-  price         Decimal  @default(0)
+  academy       Academy
+  type          CourseType
+  price         Decimal    @default(0)
   thumbnail_url String?
-  is_published  Boolean  @default(false)
+  is_published  Boolean    @default(false)
   promo_expires DateTime?
   prerequisites String?
   duration      String?
   schedule      String?
-  level         String   @default("beginner")
-  certificate   Boolean  @default(false)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  level         String     @default("beginner")
+  certificate   Boolean    @default(false)
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
 
   modules     Module[]
   enrollments Enrollment[]
@@ -70,14 +135,14 @@ model Module {
 }
 
 model Lesson {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   module_id   String
   title       String
-  type        String
+  type        LessonType
   content_url String?
   rich_text   String?
   order_index Int
-  created_at  DateTime @default(now())
+  created_at  DateTime   @default(now())
 
   module   Module     @relation(fields: [module_id], references: [id], onDelete: Cascade)
   progress Progress[]
@@ -86,16 +151,16 @@ model Lesson {
 }
 
 model Batch {
-  id           String    @id @default(uuid())
+  id           String      @id @default(uuid())
   name         String
-  academy      String
+  academy      Academy
   course_id    String?
   max_students Int?
-  status       String    @default("closed")
+  status       BatchStatus @default(closed)
   form_schema  String?
   open_date    DateTime?
   close_date   DateTime?
-  created_at   DateTime  @default(now())
+  created_at   DateTime    @default(now())
 
   course      Course?      @relation(fields: [course_id], references: [id])
   enrollments Enrollment[]
@@ -106,13 +171,13 @@ model Batch {
 }
 
 model Enrollment {
-  id          String   @id @default(uuid())
+  id          String           @id @default(uuid())
   student_id  String
   course_id   String?
   batch_id    String?
-  status      String   @default("pending")
+  status      EnrollmentStatus @default(pending)
   form_data   String?
-  enrolled_at DateTime @default(now())
+  enrolled_at DateTime         @default(now())
 
   student User    @relation(fields: [student_id], references: [id])
   course  Course? @relation(fields: [course_id], references: [id])
@@ -122,15 +187,15 @@ model Enrollment {
 }
 
 model Payment {
-  id           String    @id @default(uuid())
+  id           String       @id @default(uuid())
   student_id   String
   course_id    String?
   amount       Decimal
-  currency     String    @default("NGN")
-  paystack_ref String?   @unique
-  status       String    @default("pending")
+  currency     String       @default("NGN")
+  paystack_ref String?      @unique
+  status       PaymentStatus @default(pending)
   paid_at      DateTime?
-  created_at   DateTime  @default(now())
+  created_at   DateTime     @default(now())
 
   student User    @relation(fields: [student_id], references: [id])
   course  Course? @relation(fields: [course_id], references: [id])
@@ -184,13 +249,13 @@ model Progress {
 }
 
 model ChatRoom {
-  id         String   @id @default(uuid())
+  id         String         @id @default(uuid())
   name       String
-  type       String
-  academy    String
-  batch_id   String?  @unique
-  status     String   @default("active")
-  created_at DateTime @default(now())
+  type       ChatRoomType
+  academy    ChatAcademy
+  batch_id   String?        @unique
+  status     ChatRoomStatus @default(active)
+  created_at DateTime       @default(now())
 
   batch    Batch?       @relation(fields: [batch_id], references: [id])
   members  ChatMember[]
@@ -213,15 +278,15 @@ model ChatMember {
 }
 
 model Message {
-  id             String    @id @default(uuid())
+  id             String      @id @default(uuid())
   room_id        String
   sender_id      String
   content        String?
-  type           String    @default("text")
+  type           MessageType @default(text)
   attachment_url String?
-  is_pinned      Boolean   @default(false)
-  is_deleted     Boolean   @default(false)
-  created_at     DateTime  @default(now())
+  is_pinned      Boolean     @default(false)
+  is_deleted     Boolean     @default(false)
+  created_at     DateTime    @default(now())
   edited_at      DateTime?
 
   room      ChatRoom          @relation(fields: [room_id], references: [id], onDelete: Cascade)
