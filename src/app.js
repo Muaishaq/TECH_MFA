@@ -13,9 +13,7 @@ app.use(helmet());
 // CORS
 app.use(cors({
   origin: [
-    'https://mfa-frontend-ten.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5173'
+    'https://mfa-frontend-ten.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
