@@ -7,10 +7,7 @@ dotenv.config();
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
-
-// CORS
+// CORS must be before helmet to avoid header conflicts
 app.use(cors({
   origin: [
     'https://mfa-frontend-ten.vercel.app'
@@ -19,6 +16,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Security middleware
+app.use(helmet());
 
 // CRITICAL: Webhook route must use raw body BEFORE express.json()
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
