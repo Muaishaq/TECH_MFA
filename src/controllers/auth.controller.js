@@ -79,7 +79,7 @@ const register = asyncHandler(async (req, res) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'none', // Required for CORS with credentials across domains
     maxAge: REFRESH_TOKEN_COOKIE_MS
   });
 
@@ -136,7 +136,7 @@ const login = asyncHandler(async (req, res) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'none', // Required for CORS with credentials across domains
     maxAge: REFRESH_TOKEN_COOKIE_MS
   });
 
