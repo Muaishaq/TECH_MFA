@@ -26,24 +26,42 @@ router.get('/my', protect, asyncHandler(async (req, res) => {
     orderBy: { enrolled_at: 'desc' }
   });
 
-  // Calculate progress for each enrollment
-  const enrollmentsWithProgress = await Promise.all(enrollments.map(async (enrollment) => {
-    const totalLessons = enrollment.course?.modules?.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
-    
-    // Get completed lessons count from progress table
-    // Correct relationship: progress → lesson → module → course
-    const completedLessons = totalLessons > 0 ? await prisma.progress.count({
-      where: {
-        student_id: req.user.id,
-        completed: true,
-        lesson: {
+  // Get all completed lessons for this student in a single query (fix N+1 problem)
+  const courseIds = enrollments.map(e => e.course_id).filter(Boolean);
+  const completedProgress = courseIds.length > 0 ? await prisma.progress.findMany({
+    where: {
+      student_id: req.user.id,
+      completed: true,
+      lesson: {
+        module: {
+          course_id: { in: courseIds }
+        }
+      }
+    },
+    select: {
+      lesson: {
+        select: {
           module: {
-            course_id: enrollment.course_id
+            select: {
+              course_id: true
+            }
           }
         }
       }
-    }) : 0;
+    }
+  }) : [];
 
+  // Group completed lessons by course_id
+  const completedByCourse = {};
+  completedProgress.forEach(p => {
+    const courseId = p.lesson.module.course_id;
+    completedByCourse[courseId] = (completedByCourse[courseId] || 0) + 1;
+  });
+
+  // Calculate progress for each enrollment
+  const enrollmentsWithProgress = enrollments.map(enrollment => {
+    const totalLessons = enrollment.course?.modules?.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
+    const completedLessons = completedByCourse[enrollment.course_id] || 0;
     const percentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
     return {
@@ -54,7 +72,7 @@ router.get('/my', protect, asyncHandler(async (req, res) => {
         percentage
       }
     };
-  }));
+  });
 
   res.json({ success: true, data: { enrollments: enrollmentsWithProgress } });
 }));

@@ -91,6 +91,9 @@ model User {
   chat_members  ChatMember[]
   messages      Message[]
 
+  @@index([role])
+  @@index([academy])
+  @@index([created_at])
   @@map("users")
 }
 
@@ -118,6 +121,9 @@ model Course {
   batches     Batch[]
   sessions    LiveSession[]
 
+  @@index([academy])
+  @@index([is_published])
+  @@index([created_at])
   @@map("courses")
 }
 
@@ -183,6 +189,10 @@ model Enrollment {
   course  Course? @relation(fields: [course_id], references: [id])
   batch   Batch?  @relation(fields: [batch_id], references: [id])
 
+  @@index([student_id])
+  @@index([course_id])
+  @@index([status])
+  @@index([enrolled_at])
   @@map("enrollments")
 }
 
@@ -200,6 +210,10 @@ model Payment {
   student User    @relation(fields: [student_id], references: [id])
   course  Course? @relation(fields: [course_id], references: [id])
 
+  @@index([student_id])
+  @@index([course_id])
+  @@index([status])
+  @@index([created_at])
   @@map("payments")
 }
 
@@ -231,6 +245,9 @@ model Notification {
 
   user User @relation(fields: [user_id], references: [id])
 
+  @@index([user_id])
+  @@index([is_read])
+  @@index([created_at])
   @@map("notifications")
 }
 

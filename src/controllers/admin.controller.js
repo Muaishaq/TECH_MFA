@@ -241,34 +241,6 @@ const sendAnnouncement = asyncHandler(async (req, res) => {
   });
 });
 
-
-// @desc    Get all transactions
-// @route   GET /api/admin/transactions
-// @access  Admin
-const getTransactions = asyncHandler(async (req, res) => {
-  const payments = await prisma.payment.findMany({
-    include: {
-      student: { select: { full_name: true, email: true } },
-      course: { select: { title: true, academy: true } }
-    },
-    orderBy: { created_at: 'desc' }
-  });
-
-  const totalRevenue = await prisma.payment.aggregate({
-    where: { status: 'success' },
-    _sum: { amount: true }
-  });
-
-  res.json({
-    success: true,
-    message: 'Transactions retrieved successfully',
-    data: {
-      payments,
-      totalRevenue: totalRevenue._sum.amount || 0
-    }
-  });
-});
-
 // @desc    Manually enroll a student in a course (without payment)
 // @route   POST /api/admin/students/:id/enroll
 // @access  Admin
