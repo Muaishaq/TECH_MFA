@@ -54,7 +54,10 @@ async function sendWelcomeEmail(user) {
             live sessions, and mentorship.
           </p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard" 
+            <a href="${process.env.FRONTEND_URL || (() => {
+              console.warn('[Email Service] FRONTEND_URL not set, using production fallback');
+              return 'https://mfa-frontend-ten.vercel.app';
+            })()}/dashboard"
                style="background: #C9A84C; color: #0A0F2C; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               Go to Dashboard
             </a>
@@ -115,7 +118,10 @@ async function sendEnrollmentConfirmation(user, course) {
             <li>Community chat access</li>
           </ul>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard/courses/${course.id}" 
+            <a href="${process.env.FRONTEND_URL || (() => {
+              console.warn('[Email Service] FRONTEND_URL not set, using production fallback');
+              return 'https://mfa-frontend-ten.vercel.app';
+            })()}/dashboard/courses/${course.id}"
                style="background: #C9A84C; color: #0A0F2C; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               Start Learning
             </a>
@@ -173,7 +179,10 @@ async function sendBatchApprovalEmail(user, batch) {
             <li>Priority support</li>
           </ul>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard" 
+            <a href="${process.env.FRONTEND_URL || (() => {
+              console.warn('[Email Service] FRONTEND_URL not set, using production fallback');
+              return 'https://mfa-frontend-ten.vercel.app';
+            })()}/dashboard"
                style="background: #2ECC71; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               Go to Dashboard
             </a>
@@ -227,7 +236,10 @@ async function sendBatchRejectionEmail(user, batch) {
             and continue building your skills through our regular courses.
           </p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard" 
+            <a href="${process.env.FRONTEND_URL || (() => {
+              console.warn('[Email Service] FRONTEND_URL not set, using production fallback');
+              return 'https://mfa-frontend-ten.vercel.app';
+            })()}/dashboard"
                style="background: #0A0F2C; color: #F5F5F0; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               Explore Other Courses
             </a>
@@ -300,7 +312,10 @@ async function sendClassReminder(user, session) {
             <li>Join 5-10 minutes early to settle in</li>
           </ul>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard/sessions" 
+            <a href="${process.env.FRONTEND_URL || (() => {
+              console.warn('[Email Service] FRONTEND_URL not set, using production fallback');
+              return 'https://mfa-frontend-ten.vercel.app';
+            })()}/dashboard/sessions"
                style="background: #00CFFF; color: #0A0F2C; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               View Session Details
             </a>
