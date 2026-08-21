@@ -9,7 +9,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "postinstall": "prisma generate --force",
+    "postinstall": "prisma generate",
     "migrate": "npx prisma migrate deploy"
   },
   "keywords": [],
