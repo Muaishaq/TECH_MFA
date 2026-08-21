@@ -12,12 +12,14 @@ const {
 const { protect } = require('../middleware/auth.middleware');
 const { requireAdmin } = require('../middleware/role.middleware');
 
+// Admin routes (must come before /:id to avoid route conflicts)
+router.get('/all', protect, requireAdmin, getAllSessions);
+
 // Student routes
 router.get('/', protect, getSessions);
 router.get('/:id', protect, getSession);
 
 // Admin routes
-router.get('/all', protect, requireAdmin, getAllSessions);
 router.post('/', protect, requireAdmin, createSession);
 router.put('/:id', protect, requireAdmin, updateSession);
 router.delete('/:id', protect, requireAdmin, deleteSession);
