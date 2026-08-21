@@ -241,6 +241,44 @@ const sendAnnouncement = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get all transactions with pagination
+// @route   GET /api/admin/transactions
+// @access  Admin
+const getTransactions = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 50 } = req.query;
+
+  const [payments, total, totalRevenue] = await Promise.all([
+    prisma.payment.findMany({
+      include: {
+        student: { select: { full_name: true, email: true } },
+        course: { select: { title: true, academy: true } }
+      },
+      orderBy: { created_at: 'desc' },
+      skip: (page - 1) * limit,
+      take: Number(limit)
+    }),
+    prisma.payment.count(),
+    prisma.payment.aggregate({
+      where: { status: 'success' },
+      _sum: { amount: true }
+    })
+  ]);
+
+  res.json({
+    success: true,
+    message: 'Transactions retrieved successfully',
+    data: {
+      payments,
+      totalRevenue: totalRevenue._sum.amount || 0,
+      pagination: {
+        total,
+        page: Number(page),
+        pages: Math.ceil(total / limit)
+      }
+    }
+  });
+});
+
 // @desc    Manually enroll a student in a course (without payment)
 // @route   POST /api/admin/students/:id/enroll
 // @access  Admin
