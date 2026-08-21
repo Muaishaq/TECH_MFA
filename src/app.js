@@ -40,7 +40,7 @@ app.use('/api/batches', require('./routes/batch.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/sessions', require('./routes/session.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
-app.use('/api/enrollments', require('./routes/enrollment.routes'));
+app.use('/api/enrollments', require('./routes/enrollments.routes'));
 
 // 404 handler
 app.use((req, res) => {

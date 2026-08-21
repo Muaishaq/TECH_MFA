@@ -5,7 +5,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const { protect } = require('../middleware/auth.middleware');
 const { requireAdmin } = require('../middleware/role.middleware');
 
-// GET /api/notifications — get current user's notifications
+// @route   GET /api/notifications — get current user's notifications
+// @access  Private
 router.get('/', protect, asyncHandler(async (req, res) => {
   const notifications = await prisma.notification.findMany({
     where: { user_id: req.user.id },
@@ -15,7 +16,8 @@ router.get('/', protect, asyncHandler(async (req, res) => {
   res.json({ success: true, data: { notifications } });
 }));
 
-// PATCH /api/notifications/:id/read — mark single notification as read
+// @route   PATCH /api/notifications/:id/read — mark single notification as read
+// @access  Private
 router.patch('/:id/read', protect, asyncHandler(async (req, res) => {
   const notification = await prisma.notification.findUnique({
     where: { id: req.params.id }
@@ -37,7 +39,8 @@ router.patch('/:id/read', protect, asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Notification marked as read' });
 }));
 
-// PATCH /api/notifications/read-all — mark all notifications as read
+// @route   PATCH /api/notifications/read-all — mark all notifications as read
+// @access  Private
 router.patch('/read-all', protect, asyncHandler(async (req, res) => {
   await prisma.notification.updateMany({
     where: { user_id: req.user.id, is_read: false },
@@ -47,7 +50,8 @@ router.patch('/read-all', protect, asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'All notifications marked as read' });
 }));
 
-// GET /api/notifications/all — admin gets all unique announcements sent
+// @route   GET /api/notifications/all — admin gets all unique announcements sent
+// @access  Admin
 router.get('/all', protect, requireAdmin, asyncHandler(async (req, res) => {
   // Get unique announcements by title+message combination
   const notifications = await prisma.notification.findMany({
@@ -74,7 +78,8 @@ router.get('/all', protect, requireAdmin, asyncHandler(async (req, res) => {
   res.json({ success: true, data: { notifications: unique.slice(0, 100) } });
 }));
 
-// DELETE /api/notifications/announcement — admin deletes ALL copies of an announcement
+// @route   DELETE /api/notifications/announcement — admin deletes ALL copies of an announcement
+// @access  Admin
 router.delete('/announcement', protect, requireAdmin, asyncHandler(async (req, res) => {
   const { title, message } = req.body;
   if (!title || !message) {
