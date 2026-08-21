@@ -335,6 +335,59 @@ async function sendClassReminder(user, session) {
   }
 }
 
+// Send password reset email
+async function sendPasswordResetEmail(user, resetToken) {
+  if (!transporter) {
+    console.warn('[Email Service] Skipping password reset email - SMTP not configured');
+    return;
+  }
+
+  try {
+    const resetUrl = `${process.env.FRONTEND_URL || (() => {
+      console.warn('[Email Service] FRONTEND_URL not set, using production fallback');
+      return 'https://mfa-frontend-ten.vercel.app';
+    })()}/auth/reset-password?token=${resetToken}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || '"MFA Platform" <noreply@mfaacademy.com>',
+      to: user.email,
+      subject: 'Reset Your Password',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #0A0F2C, #1a1f3c); padding: 30px; border-radius: 12px; margin-bottom: 20px;">
+            <h1 style="color: #F5F5F0; margin: 0;">Reset Your Password</h1>
+            <p style="color: #F5F5F0; opacity: 0.8; margin: 10px 0 0 0;">Secure account recovery</p>
+          </div>
+          <p style="color: #333; line-height: 1.6;">
+            Hi ${user.full_name},
+          </p>
+          <p style="color: #333; line-height: 1.6;">
+            We received a request to reset your password. Click the button below to create a new password:
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}"
+               style="background: #C9A84C; color: #0A0F2C; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+              Reset Password
+            </a>
+          </div>
+          <p style="color: #666; font-size: 14px;">
+            This link will expire in 1 hour. If you didn't request this, please ignore this email.
+          </p>
+          <p style="color: #666; font-size: 14px; margin-top: 30px;">
+            Best regards,<br>
+            The MFA Academy Team
+          </p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`[Email Service] Password reset email sent to ${user.email}`);
+  } catch (error) {
+    console.error('[Email Service] Failed to send password reset email:', error);
+  }
+}
+
 // Initialize on module load
 initTransporter();
 
@@ -344,4 +397,5 @@ module.exports = {
   sendBatchApprovalEmail,
   sendBatchRejectionEmail,
   sendClassReminder,
+  sendPasswordResetEmail,
 };

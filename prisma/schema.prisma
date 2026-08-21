@@ -73,27 +73,30 @@ enum MessageType {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  full_name     String
-  email         String   @unique
-  password_hash String
-  role          Role     @default(student)
-  academy       Academy? @default(forex)
-  is_verified   Boolean  @default(false)
-  avatar_url    String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id                String    @id @default(uuid())
+  full_name         String
+  email             String    @unique
+  password_hash     String
+  role              Role      @default(student)
+  academy           Academy?  @default(forex)
+  is_verified       Boolean   @default(false)
+  avatar_url        String?
+  reset_token       String?   @unique
+  reset_token_expiry DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
 
-  enrollments   Enrollment[]
-  payments      Payment[]
-  notifications Notification[]
-  progress      Progress[]
-  chat_members  ChatMember[]
-  messages      Message[]
+  enrollments       Enrollment[]
+  payments          Payment[]
+  notifications     Notification[]
+  progress          Progress[]
+  chat_members      ChatMember[]
+  messages          Message[]
 
   @@index([role])
   @@index([academy])
   @@index([created_at])
+  @@index([reset_token])
   @@map("users")
 }
 
