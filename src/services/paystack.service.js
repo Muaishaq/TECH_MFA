@@ -8,7 +8,7 @@ const initiatePayment = (email, amount, reference, metadata) => {
       amount: amount * 100,
       reference,
       metadata,
-      callback_url: `${process.env.CLIENT_URL}/payment/success`
+      callback_url: `${process.env.CLIENT_URL || process.env.FRONTEND_URL}/payment/success`
     });
 
     const options = {
